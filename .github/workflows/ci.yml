@@ -21,6 +21,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # `verify` roda tudo: testes de dominio, casos de uso, regras de arquitetura
+      # (ArchUnit) e os testes de integracao com Testcontainers -- o runner do GitHub
+      # ja tem Docker, entao o PostgreSQL real sobe aqui do mesmo jeito que na maquina.
       - name: Build e testes
         run: ./mvnw -B verify
 
@@ -34,5 +37,58 @@ jobs:
             target/failsafe-reports/
             target/site/jacoco/
 
+      # Em pull request basta saber que a imagem builda. Na main quem constroi e o job de
+      # publicacao, entao repetir aqui seria pagar o build duas vezes.
       - name: Validar build da imagem Docker
+        if: github.event_name == 'pull_request'
         run: docker build -t orderflow-reconciliation:ci .
+
+  publish:
+    name: Publica a imagem no GHCR
+    # So publica o que passou nos testes: imagem quebrada no registry e pior do que imagem
+    # nenhuma, porque parece que funciona.
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      # Permissao minima necessaria. O GITHUB_TOKEN e temporario e some no fim da execucao,
+      # entao nao ha credencial de registry guardada em lugar nenhum.
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Autenticar no GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Alem das tags, gera os rotulos OpenContainers (origem, revisao, licenca) que fazem
+      # a pagina do pacote apontar de volta para este repositorio.
+      - name: Montar tags e rotulos
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Construir e publicar
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache entre execucoes: sem ele cada publicacao rebaixaria todas as dependencias
+          # Maven de novo dentro do container.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

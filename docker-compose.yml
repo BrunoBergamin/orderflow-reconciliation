@@ -19,6 +19,9 @@ services:
       retries: 10
 
   reconciliation:
+    #   docker compose up --build        -> compila o codigo local
+    #   docker compose up --pull always  -> baixa a imagem pronta do GHCR, sem compilar
+    image: ghcr.io/brunobergamin/orderflow-reconciliation:latest
     build: .
     container_name: reconciliation-api
     ports:

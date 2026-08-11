@@ -33,7 +33,8 @@ decidir na hora se vale abrir chamado, sem reabrir os dois arquivos.
 ## Rodando
 
 ```bash
-docker compose up --build
+docker compose up --build        # compila o código local
+docker compose up --pull always  # baixa a imagem pronta do GHCR, sem compilar
 ```
 
 Swagger em http://localhost:8082/swagger-ui.html. Tem dois CSV de exemplo em `exemplos/`,
