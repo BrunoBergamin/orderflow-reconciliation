@@ -1,0 +1,27 @@
+# Perfil dos testes de integracao. O banco vem do Testcontainers.
+spring:
+  batch:
+    jdbc:
+      initialize-schema: never
+    job:
+      enabled: false
+
+reconciliation:
+  job:
+    # Sincrono nos testes: a assercao roda depois do processamento, sem espera arbitraria.
+    async: false
+  batch:
+    chunk-size: 100
+    skip-limit: 100
+  fees:
+    rates:
+      credito: "3.19"
+      credito_parcelado: "3.99"
+      debito: "1.99"
+      pix: "0.99"
+
+logging:
+  level:
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN
+    org.springframework.batch: WARN

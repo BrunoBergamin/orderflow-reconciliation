@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: orderflow-reconciliation
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/reconciliation}
+    username: ${DB_USERNAME:reconciliation}
+    password: ${DB_PASSWORD:reconciliation}
+    hikari:
+      maximum-pool-size: 10
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  batch:
+    jdbc:
+      # As tabelas do Batch vem pelo Flyway (V2), versionadas como o resto do schema.
+      initialize-schema: never
+    job:
+      # Sem isto o Boot executa todo Job encontrado no contexto assim que a aplicacao sobe.
+      enabled: false
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+server:
+  port: ${SERVER_PORT:8082}
+  error:
+    include-message: never
+    include-stacktrace: never
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: orderflow-reconciliation
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+reconciliation:
+  job:
+    async: ${JOB_ASYNC:true}
+  batch:
+    chunk-size: 500
+    # Ate mil linhas ruins sao puladas e registradas; acima disso o arquivo esta errado
+    # como um todo e o job falha, que e o comportamento correto.
+    skip-limit: 1000
+  storage:
+    directory: ${STORAGE_DIR:${java.io.tmpdir}/orderflow-reconciliation}
+  fees:
+    # Taxas contratadas com o adquirente, em pontos percentuais.
+    rates:
+      credito: "3.19"
+      credito_parcelado: "3.99"
+      debito: "1.99"
+      pix: "0.99"
+
+logging:
+  level:
+    br.com.bergamin.reconciliation: INFO
