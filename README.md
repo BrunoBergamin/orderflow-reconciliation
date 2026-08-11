@@ -57,8 +57,16 @@ O job tem quatro passos: importa as vendas, importa o repasse, concilia e fecha 
 
 Importar os dois arquivos antes de comparar custa uma passada extra no banco. Em troca, os
 arquivos podem vir em qualquer ordem, o cruzamento sai por índice e dá para reprocessar a
-comparação sem reler nada. E o job reinicia do passo onde parou, que é a razão de usar
-Spring Batch em vez de um `for` lendo arquivo.
+comparação sem reler nada.
+
+E o job **reinicia do passo onde parou**, que é a razão de usar Spring Batch em vez de um
+`for` lendo arquivo. O cenário é comum: o relatório de vendas chegou, o arquivo do
+adquirente atrasou. A primeira execução importa as vendas e falha ao procurar o repasse;
+quando o arquivo chega, a mesma execução é relançada e retoma do passo que falhou — sem
+reimportar as vendas, sem duplicar linha, sem ninguém limpar tabela na mão.
+
+O `JobRestartIT` monta exatamente esse cenário e verifica que, depois do relançamento, as
+vendas continuam sendo 3 e não 6.
 
 A comparação em si mora no `ReconciliationEngine` — Java puro, sem Spring, sem SQL. Ele
 recebe uma venda e as linhas de repasse daquela transação e devolve a lista de apontamentos.
@@ -104,7 +112,7 @@ mais antigo que existe.
 
 ```bash
 ./mvnw test      # 24 testes, ~5s, não precisa de Docker
-./mvnw verify    # + 10 testes de integração com PostgreSQL real
+./mvnw verify    # + 12 testes de integração com PostgreSQL real
 ```
 
 O teste que mais gosto é o `ReconciliationJobIT`: monta dois CSV com um problema de cada
