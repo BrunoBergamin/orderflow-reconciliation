@@ -1,0 +1,39 @@
+name: orderflow-reconciliation
+
+services:
+  postgres-reconciliation:
+    image: postgres:16-alpine
+    container_name: reconciliation-postgres
+    environment:
+      POSTGRES_DB: reconciliation
+      POSTGRES_USER: reconciliation
+      POSTGRES_PASSWORD: reconciliation
+    ports:
+      - "5434:5432"
+    volumes:
+      - reconciliation-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reconciliation -d reconciliation"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  reconciliation:
+    build: .
+    container_name: reconciliation-api
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://postgres-reconciliation:5432/reconciliation
+      DB_USERNAME: reconciliation
+      DB_PASSWORD: reconciliation
+    volumes:
+      - reconciliation-files:/app/arquivos
+    depends_on:
+      postgres-reconciliation:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  reconciliation-data:
+  reconciliation-files:
