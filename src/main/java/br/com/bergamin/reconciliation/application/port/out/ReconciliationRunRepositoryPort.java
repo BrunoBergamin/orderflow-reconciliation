@@ -15,6 +15,9 @@ public interface ReconciliationRunRepositoryPort {
 
     Optional<ReconciliationRun> findById(UUID runId);
 
+    /** Execucao anterior concluida com os mesmos dois arquivos, se houver. */
+    Optional<ReconciliationRun> findConcludedWithSameFiles(ReconciliationRun.FileFingerprint fingerprint);
+
     List<ReconciliationRun> findRecent(int limit);
 
     List<Divergence> findDivergences(UUID runId, DivergenceType type, int limit, int offset);

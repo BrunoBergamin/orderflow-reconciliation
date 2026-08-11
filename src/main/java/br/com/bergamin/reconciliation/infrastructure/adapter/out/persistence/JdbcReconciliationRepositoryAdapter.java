@@ -28,7 +28,8 @@ import java.util.UUID;
 public class JdbcReconciliationRepositoryAdapter implements ReconciliationRunRepositoryPort {
 
     private static final String RUN_COLUMNS = """
-            id, sales_file, settlement_file, reference_date, status, started_at, finished_at,
+            id, sales_file, settlement_file, sales_file_hash, settlement_file_hash,
+            reference_date, status, started_at, finished_at,
             sales_read, settlements_read, matched, divergences, critical_divergences,
             amount_at_risk, failure_reason
             """;
@@ -48,12 +49,42 @@ public class JdbcReconciliationRepositoryAdapter implements ReconciliationRunRep
         params.put("referenceDate", run.referenceDate());
         params.put("status", run.status().name());
         params.put("startedAt", Timestamp.from(run.startedAt()));
+        params.put("salesHash", run.fingerprint().salesHash());
+        params.put("settlementHash", run.fingerprint().settlementHash());
 
         jdbcTemplate.update("""
                 INSERT INTO reconciliation_run
-                    (id, sales_file, settlement_file, reference_date, status, started_at)
-                VALUES (:id, :salesFile, :settlementFile, :referenceDate, :status, :startedAt)
+                    (id, sales_file, settlement_file, sales_file_hash, settlement_file_hash,
+                     reference_date, status, started_at)
+                VALUES (:id, :salesFile, :settlementFile, :salesHash, :settlementHash,
+                        :referenceDate, :status, :startedAt)
                 """, params);
+    }
+
+    /**
+     * Ultima execucao concluida com os mesmos dois arquivos.
+     *
+     * <p>So considera {@code CONCLUIDA}: uma tentativa anterior que falhou nao e motivo
+     * para impedir a nova -- pelo contrario, reimportar e exatamente o que se espera.</p>
+     */
+    @Override
+    public Optional<ReconciliationRun> findConcludedWithSameFiles(
+            ReconciliationRun.FileFingerprint fingerprint) {
+
+        if (!fingerprint.isPresent()) {
+            return Optional.empty();
+        }
+        return jdbcTemplate.query(
+                "SELECT " + RUN_COLUMNS + """
+                         FROM reconciliation_run
+                         WHERE sales_file_hash = :salesHash
+                           AND settlement_file_hash = :settlementHash
+                           AND status = 'CONCLUIDA'
+                         ORDER BY started_at DESC LIMIT 1
+                        """,
+                Map.of("salesHash", fingerprint.salesHash(),
+                        "settlementHash", fingerprint.settlementHash()),
+                runMapper()).stream().findFirst();
     }
 
     @Override
@@ -132,6 +163,8 @@ public class JdbcReconciliationRepositoryAdapter implements ReconciliationRunRep
                 rs.getObject("id", UUID.class),
                 rs.getString("sales_file"),
                 rs.getString("settlement_file"),
+                new ReconciliationRun.FileFingerprint(
+                        rs.getString("sales_file_hash"), rs.getString("settlement_file_hash")),
                 rs.getDate("reference_date") == null ? null : rs.getDate("reference_date").toLocalDate(),
                 RunStatus.valueOf(rs.getString("status")),
                 rs.getTimestamp("started_at").toInstant(),

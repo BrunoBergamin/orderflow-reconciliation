@@ -3,6 +3,7 @@ package br.com.bergamin.reconciliation.application.service;
 import br.com.bergamin.reconciliation.application.port.in.StartReconciliationUseCase;
 import br.com.bergamin.reconciliation.application.port.out.ReconciliationJobPort;
 import br.com.bergamin.reconciliation.application.port.out.ReconciliationRunRepositoryPort;
+import br.com.bergamin.reconciliation.domain.exception.DuplicateImportException;
 import br.com.bergamin.reconciliation.domain.model.ReconciliationRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +39,15 @@ public class StartReconciliationService implements StartReconciliationUseCase {
 
     @Override
     public UUID start(Command command) {
+        recusarSeJaConciliado(command);
+
         UUID runId = UUID.randomUUID();
 
         runs.save(ReconciliationRun.starting(
                 runId,
                 command.salesFileName(),
                 command.settlementFileName(),
+                command.fingerprint(),
                 command.referenceDate(),
                 clock.instant()));
 
@@ -57,5 +61,23 @@ public class StartReconciliationService implements StartReconciliationUseCase {
         log.info("conciliacao {} iniciada para os arquivos {} e {}",
                 runId, command.salesFileName(), command.settlementFileName());
         return runId;
+    }
+
+    /**
+     * Avisa quando os mesmos arquivos ja foram conciliados.
+     *
+     * <p>Comparacao por conteudo, nao por nome: o mesmo arquivo salvo como "repasse.csv" e
+     * "repasse (1).csv" continua sendo o mesmo. Duas conciliacoes identicas nao quebram
+     * nada, mas criam a duvida sobre qual delas vale -- que e a confusao que este sistema
+     * existe para eliminar.</p>
+     */
+    private void recusarSeJaConciliado(Command command) {
+        if (command.force() || !command.fingerprint().isPresent()) {
+            return;
+        }
+        runs.findConcludedWithSameFiles(command.fingerprint()).ifPresent(anterior -> {
+            log.info("arquivos ja conciliados na execucao {}", anterior.id());
+            throw new DuplicateImportException(anterior.id());
+        });
     }
 }

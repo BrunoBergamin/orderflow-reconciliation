@@ -84,6 +84,20 @@ o número, o conteúdo original e o motivo em `import_error`, consultável pela 
 silêncio seria trocar um problema visível (job quebrado) por um invisível (venda que sumiu
 do relatório).
 
+**Reenviar o mesmo arquivo avisa em vez de duplicar.** É o erro operacional mais comum
+aqui: o fechamento é mensal, o arquivo fica no e-mail, e alguém importa de novo achando que
+a primeira tentativa falhou. O resultado seriam duas conciliações idênticas e a dúvida sobre
+qual vale — justamente a confusão que o sistema existe para eliminar.
+
+A detecção é por **hash do conteúdo**, não pelo nome: o mesmo arquivo salvo como
+`repasse.csv` e `repasse (1).csv` continua sendo o mesmo. O SHA-256 é calculado enquanto o
+upload é gravado, na mesma passada, para não ler um arquivo de dezenas de MB duas vezes.
+
+A resposta é 409 com o id da conciliação anterior e a instrução de como reprocessar
+(`force=true`), porque reimportar às vezes é legítimo — corrigir a tabela de taxas e rodar
+de novo, por exemplo. E só conta execução **concluída**: uma tentativa que falhou antes não
+impede a nova.
+
 **Tolerância de um centavo.** O arquivo do adquirente já vem arredondado. Sem tolerância, um
 relatório de 10 mil linhas viria com milhares de alertas de centavo e ninguém olharia mais
 para ele — que é como um sistema de conciliação morre na prática. Mesma ideia na taxa: folga
@@ -112,7 +126,7 @@ mais antigo que existe.
 
 ```bash
 ./mvnw test      # 24 testes, ~5s, não precisa de Docker
-./mvnw verify    # + 12 testes de integração com PostgreSQL real
+./mvnw verify    # + 15 testes de integração com PostgreSQL real
 ```
 
 O teste que mais gosto é o `ReconciliationJobIT`: monta dois CSV com um problema de cada

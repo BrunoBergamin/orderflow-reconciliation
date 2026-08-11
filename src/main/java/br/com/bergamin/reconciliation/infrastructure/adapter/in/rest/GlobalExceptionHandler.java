@@ -1,5 +1,6 @@
 package br.com.bergamin.reconciliation.infrastructure.adapter.in.rest;
 
+import br.com.bergamin.reconciliation.domain.exception.DuplicateImportException;
 import br.com.bergamin.reconciliation.domain.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFound(ResourceNotFoundException e) {
         return problem(HttpStatus.NOT_FOUND, "Recurso nao encontrado", e.getMessage(), "recurso-nao-encontrado");
+    }
+
+    /**
+     * Nao e erro: e um aviso com o caminho de saida.
+     *
+     * <p>A resposta carrega o id da execucao anterior para o operador conferir o resultado
+     * que ja existe, e diz explicitamente como reprocessar se for essa a intencao.</p>
+     */
+    @ExceptionHandler(DuplicateImportException.class)
+    public ProblemDetail handleDuplicateImport(DuplicateImportException e) {
+        ProblemDetail problem = problem(HttpStatus.CONFLICT, "Arquivos ja conciliados",
+                e.getMessage(), "importacao-duplicada");
+        problem.setProperty("previousRunId", e.getPreviousRunId().toString());
+        problem.setProperty("comoReprocessar", "repita a chamada com force=true");
+        return problem;
     }
 
     @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class})

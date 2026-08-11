@@ -3,7 +3,9 @@ package br.com.bergamin.reconciliation.infrastructure.adapter.in.rest;
 import br.com.bergamin.reconciliation.application.port.in.FindReconciliationUseCase;
 import br.com.bergamin.reconciliation.application.port.in.StartReconciliationUseCase;
 import br.com.bergamin.reconciliation.domain.model.DivergenceType;
+import br.com.bergamin.reconciliation.domain.model.ReconciliationRun;
 import br.com.bergamin.reconciliation.infrastructure.adapter.in.rest.dto.ReconciliationDtos;
+import br.com.bergamin.reconciliation.infrastructure.storage.StoredFile;
 import br.com.bergamin.reconciliation.infrastructure.storage.UploadedFileStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -62,20 +64,25 @@ public class ReconciliationController {
                     """)
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Conciliacao aceita e em processamento"),
-            @ApiResponse(responseCode = "400", description = "Arquivo ausente ou vazio")
+            @ApiResponse(responseCode = "400", description = "Arquivo ausente ou vazio"),
+            @ApiResponse(responseCode = "409",
+                    description = "Estes arquivos ja foram conciliados; a resposta traz o id da execucao anterior. "
+                            + "Use force=true para reprocessar mesmo assim.")
     })
     public ResponseEntity<ReconciliationDtos.StartedResponse> start(
             @RequestParam("salesFile") MultipartFile salesFile,
             @RequestParam("settlementFile") MultipartFile settlementFile,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate referenceDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate referenceDate,
+            @RequestParam(defaultValue = "false") boolean force) {
 
-        String salesPath = storage.store(salesFile, "vendas");
-        String settlementPath = storage.store(settlementFile, "repasse");
+        StoredFile vendas = storage.store(salesFile, "vendas");
+        StoredFile repasse = storage.store(settlementFile, "repasse");
 
         UUID runId = startReconciliation.start(new StartReconciliationUseCase.Command(
-                salesPath, settlementPath,
-                salesFile.getOriginalFilename(), settlementFile.getOriginalFilename(),
-                referenceDate));
+                vendas.path(), repasse.path(),
+                vendas.originalName(), repasse.originalName(),
+                new ReconciliationRun.FileFingerprint(vendas.sha256(), repasse.sha256()),
+                referenceDate, force));
 
         return ResponseEntity
                 .accepted()

@@ -6,10 +6,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.UUID;
 
 /**
@@ -34,7 +38,7 @@ public class UploadedFileStorage {
         this.directory = Paths.get(directory);
     }
 
-    public String store(MultipartFile file, String prefix) {
+    public StoredFile store(MultipartFile file, String prefix) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("arquivo de %s ausente ou vazio".formatted(prefix));
         }
@@ -42,13 +46,38 @@ public class UploadedFileStorage {
         try {
             Files.createDirectories(directory);
             Path destination = directory.resolve("%s-%s.csv".formatted(prefix, UUID.randomUUID()));
+            String hash = copyCalculatingHash(file, destination);
 
-            try (InputStream input = file.getInputStream()) {
-                Files.copy(input, destination, StandardCopyOption.REPLACE_EXISTING);
-            }
-            return destination.toAbsolutePath().toString();
+            return new StoredFile(destination.toAbsolutePath().toString(), file.getOriginalFilename(), hash);
         } catch (IOException e) {
             throw new IllegalStateException("nao foi possivel gravar o arquivo de " + prefix, e);
+        }
+    }
+
+    /**
+     * Grava e calcula o SHA-256 na mesma passada.
+     *
+     * <p>Ler o arquivo duas vezes (uma para gravar, outra para o hash) dobraria a I/O de um
+     * arquivo de fechamento que pode ter dezenas de megabytes. O {@link DigestOutputStream}
+     * calcula enquanto os bytes passam.</p>
+     */
+    private String copyCalculatingHash(MultipartFile file, Path destination) throws IOException {
+        MessageDigest digest = sha256();
+
+        try (InputStream input = file.getInputStream();
+             OutputStream output = Files.newOutputStream(destination);
+             DigestOutputStream digestOutput = new DigestOutputStream(output, digest)) {
+            input.transferTo(digestOutput);
+        }
+        return HexFormat.of().formatHex(digest.digest());
+    }
+
+    private MessageDigest sha256() {
+        try {
+            return MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            // SHA-256 e obrigatorio em toda JVM; se faltar, o ambiente esta quebrado.
+            throw new IllegalStateException("SHA-256 indisponivel nesta JVM", e);
         }
     }
 }

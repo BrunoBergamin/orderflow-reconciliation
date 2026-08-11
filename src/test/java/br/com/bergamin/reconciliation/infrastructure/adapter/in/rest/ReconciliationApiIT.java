@@ -102,6 +102,52 @@ class ReconciliationApiIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("reenviar os mesmos arquivos avisa e aponta a conciliacao anterior")
+    void recusaImportacaoDuplicada() throws Exception {
+        String primeiroRunId = iniciarConciliacao();
+
+        // Mesmo conteudo, nome diferente: a deteccao e por hash, nao por nome de arquivo.
+        mockMvc.perform(multipart("/api/v1/reconciliations")
+                        .file(arquivo("salesFile", "vendas (1).csv", VENDAS))
+                        .file(arquivo("settlementFile", "repasse - copia.csv", REPASSE)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Arquivos ja conciliados"))
+                .andExpect(jsonPath("$.previousRunId").value(primeiroRunId))
+                .andExpect(jsonPath("$.comoReprocessar").isNotEmpty());
+
+        // Nao criou uma segunda execucao.
+        assertThat(contarExecucoes()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("com force=true reprocessa mesmo assim")
+    void forcaReprocessamento() throws Exception {
+        iniciarConciliacao();
+
+        mockMvc.perform(multipart("/api/v1/reconciliations")
+                        .file(arquivo("salesFile", "vendas.csv", VENDAS))
+                        .file(arquivo("settlementFile", "repasse.csv", REPASSE))
+                        .param("force", "true"))
+                .andExpect(status().isAccepted());
+
+        // Reimportar as vezes e legitimo: corrigir a tabela de taxas e rodar de novo.
+        assertThat(contarExecucoes()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("arquivo diferente nao e tratado como duplicata")
+    void arquivoDiferentePassa() throws Exception {
+        iniciarConciliacao();
+
+        mockMvc.perform(multipart("/api/v1/reconciliations")
+                        .file(arquivo("salesFile", "vendas.csv", VENDAS))
+                        .file(arquivo("settlementFile", "repasse.csv", REPASSE + "TX-C;2026-08-31;10.00;0.32;9.68\n")))
+                .andExpect(status().isAccepted());
+
+        assertThat(contarExecucoes()).isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("arquivo ausente devolve 400, nao 500")
     void arquivoAusente() throws Exception {
         mockMvc.perform(multipart("/api/v1/reconciliations")
@@ -140,6 +186,11 @@ class ReconciliationApiIT extends AbstractIntegrationTest {
                 .get("runId").asText();
         assertThat(runId).isNotBlank();
         return runId;
+    }
+
+    private long contarExecucoes() {
+        Long total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reconciliation_run", Long.class);
+        return total == null ? 0 : total;
     }
 
     private MockMultipartFile arquivo(String campo, String nome, String conteudo) {
