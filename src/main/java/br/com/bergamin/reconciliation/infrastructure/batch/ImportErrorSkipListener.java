@@ -16,7 +16,7 @@ import java.util.UUID;
  * <p>Pular linha ruim sem registrar seria trocar um problema visivel (job quebrado) por um
  * invisivel (venda que sumiu do relatorio). Aqui a linha pulada vai para
  * {@code import_error} com numero, conteudo original e motivo, e fica consultavel pela
- * API -- o operador decide se corrige o arquivo e reprocessa ou se lanca a mao.</p>
+ * API. O operador decide se corrige o arquivo e reprocessa ou se lanca a mao.</p>
  */
 public class ImportErrorSkipListener implements SkipListener<Object, Object> {
 

@@ -11,7 +11,7 @@ import java.util.Objects;
  * novo; com os tres numeros na linha, da para decidir na hora se vale abrir chamado com o
  * adquirente.</p>
  *
- * <p>As fabricas estaticas existem para que cada tipo nasca com os campos coerentes -- nao
+ * <p>As fabricas estaticas existem para que cada tipo nasca com os campos coerentes. Nao
  * ha como criar um {@code VENDA_SEM_REPASSE} com valor encontrado preenchido.</p>
  */
 public record Divergence(

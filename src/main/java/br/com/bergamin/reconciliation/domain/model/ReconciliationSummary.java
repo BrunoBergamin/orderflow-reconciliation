@@ -3,7 +3,7 @@ package br.com.bergamin.reconciliation.domain.model;
 /**
  * Resumo de uma execucao de conciliacao.
  *
- * <p>{@code amountAtRisk} soma o dinheiro envolvido nas divergencias criticas -- e o numero
+ * <p>{@code amountAtRisk} soma o dinheiro envolvido nas divergencias criticas, e o numero
  * que interessa a quem paga a conta.
  */
 public record ReconciliationSummary(

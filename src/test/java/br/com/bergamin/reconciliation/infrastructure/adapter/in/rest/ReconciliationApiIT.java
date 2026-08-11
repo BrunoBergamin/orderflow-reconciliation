@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * A API de ponta a ponta: envia os dois arquivos, processa e consulta o resultado.
  *
  * <p>No perfil de teste o job roda de forma sincrona, entao ao voltar do POST a conciliacao
- * ja terminou -- em producao a resposta sai antes, com status EM_ANDAMENTO.</p>
+ * ja terminou. Em producao a resposta sai antes, com status EM_ANDAMENTO.</p>
  */
 @AutoConfigureMockMvc
 @DisplayName("API de conciliacao (integracao)")

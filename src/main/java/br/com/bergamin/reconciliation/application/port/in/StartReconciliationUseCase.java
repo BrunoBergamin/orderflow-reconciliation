@@ -19,7 +19,7 @@ public interface StartReconciliationUseCase {
 
     /**
      * @param force reprocessa mesmo que os arquivos ja tenham sido conciliados. Existe
-     *              porque reimportar as vezes e legitimo -- corrigir a tabela de taxas e
+     *              porque reimportar as vezes e legitimo. Corrigir a tabela de taxas e
      *              rodar de novo, por exemplo.
      */
     record Command(String salesFilePath, String settlementFilePath,

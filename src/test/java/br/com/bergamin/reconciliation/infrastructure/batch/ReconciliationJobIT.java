@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * O job completo, ponta a ponta, contra um cenario com um problema de cada tipo.
  *
  * <p>Os arquivos foram montados para que cada apontamento tenha um motivo claro, e o teste
- * confere tanto a quantidade quanto os valores -- inclusive o total em risco, que e o
+ * confere tanto a quantidade quanto os valores, inclusive o total em risco, que e o
  * numero que o dono da loja olha.</p>
  */
 @DisplayName("Job de conciliacao (integracao)")

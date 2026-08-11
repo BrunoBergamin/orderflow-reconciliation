@@ -24,7 +24,7 @@ public record Money(BigDecimal amount) implements Comparable<Money> {
      * Diferenca de ate um centavo e ruido de arredondamento, nao divergencia.
      *
      * <p>Sem esta tolerancia, um relatorio de 10 mil linhas viria com milhares de alertas de
-     * um centavo e ninguem olharia mais para ele -- que e como um sistema de conciliacao
+     * um centavo e ninguem olharia mais para ele, que e como um sistema de conciliacao
      * morre na pratica.</p>
      */
     public static final Money TOLERANCIA = Money.of("0.01");

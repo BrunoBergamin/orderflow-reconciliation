@@ -20,7 +20,7 @@ import java.util.UUID;
  * Grava o arquivo enviado em disco para o job ler.
  *
  * <p>O job de lote precisa de um caminho estavel, e nao de um {@code MultipartFile} que
- * some quando a requisicao termina -- especialmente com processamento assincrono, em que a
+ * some quando a requisicao termina, especialmente com processamento assincrono, em que a
  * resposta HTTP sai antes de o arquivo ser lido.</p>
  *
  * <p>O nome gravado e sempre um UUID. O nome original vem do cliente e nao pode ser usado

@@ -7,7 +7,7 @@ import java.util.UUID;
  *
  * <p>Existe para que o caso de uso nao conheca Spring Batch. Trocar o job por uma fila de
  * workers, ou por uma chamada a um servico externo de processamento, seria escrever outro
- * adaptador -- o caso de uso continua igual.</p>
+ * adaptador. O caso de uso continua igual.</p>
  */
 public interface ReconciliationJobPort {
 

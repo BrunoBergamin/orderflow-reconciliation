@@ -33,7 +33,7 @@ class ArchitectureTest {
      * A regra mais importante deste projeto.
      *
      * <p>O motor de conciliacao e o que da valor ao sistema. Ele nao pode depender de Spring
-     * Batch nem de JDBC -- se depender, so da para testa-lo subindo um job inteiro contra um
+     * Batch nem de JDBC. Se depender, so da para testa-lo subindo um job inteiro contra um
      * banco, e a regra de negocio deixa de ser verificavel em milissegundos.</p>
      */
     @ArchTest

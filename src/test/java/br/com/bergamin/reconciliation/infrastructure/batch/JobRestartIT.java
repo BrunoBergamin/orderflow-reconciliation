@@ -27,12 +27,12 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Reinicio do ponto onde parou -- a caracteristica que justifica usar Spring Batch em vez
+ * Reinicio do ponto onde parou. A caracteristica que justifica usar Spring Batch em vez
  * de um laco lendo arquivo.
  *
  * <p>O cenario e real: o relatorio de vendas chegou, o arquivo do adquirente atrasou. A
  * primeira execucao importa as vendas e falha ao procurar o repasse. Quando o arquivo
- * chega, a mesma execucao e relancada e retoma do passo que falhou -- sem reimportar as
+ * chega, a mesma execucao e relancada e retoma do passo que falhou. Sem reimportar as
  * vendas, sem duplicar linha, sem ninguem precisar limpar tabela na mao.</p>
  */
 @DisplayName("Reinicio do job (integracao)")

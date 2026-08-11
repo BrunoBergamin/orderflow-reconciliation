@@ -17,7 +17,7 @@ import java.util.UUID;
  *
  * <p>A ordem importa: a linha em {@code reconciliation_run} nasce com status
  * {@code EM_ANDAMENTO} <b>antes</b> de o job comecar. Se o processo cair no meio, fica o
- * rastro de uma execucao que ficou pendurada -- melhor do que um arquivo processado pela
+ * rastro de uma execucao que ficou pendurada. Melhor do que um arquivo processado pela
  * metade sem nenhum registro de que a tentativa existiu.</p>
  */
 @Service
@@ -68,7 +68,7 @@ public class StartReconciliationService implements StartReconciliationUseCase {
      *
      * <p>Comparacao por conteudo, nao por nome: o mesmo arquivo salvo como "repasse.csv" e
      * "repasse (1).csv" continua sendo o mesmo. Duas conciliacoes identicas nao quebram
-     * nada, mas criam a duvida sobre qual delas vale -- que e a confusao que este sistema
+     * nada, mas criam a duvida sobre qual delas vale, que e a confusao que este sistema
      * existe para eliminar.</p>
      */
     private void recusarSeJaConciliado(Command command) {

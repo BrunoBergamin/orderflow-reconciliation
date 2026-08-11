@@ -65,7 +65,7 @@ public class JdbcReconciliationRepositoryAdapter implements ReconciliationRunRep
      * Ultima execucao concluida com os mesmos dois arquivos.
      *
      * <p>So considera {@code CONCLUIDA}: uma tentativa anterior que falhou nao e motivo
-     * para impedir a nova -- pelo contrario, reimportar e exatamente o que se espera.</p>
+     * para impedir a nova. Pelo contrario, reimportar e exatamente o que se espera.</p>
      */
     @Override
     public Optional<ReconciliationRun> findConcludedWithSameFiles(
@@ -109,7 +109,7 @@ public class JdbcReconciliationRepositoryAdapter implements ReconciliationRunRep
                 .addValue("limit", limit)
                 .addValue("offset", offset);
 
-        // O filtro so entra no SQL quando existe -- nada de "(:type IS NULL OR type = :type)",
+        // O filtro so entra no SQL quando existe. Nada de "(:type IS NULL OR type = :type)",
         // que atrapalha o planejador e ainda esbarra em inferencia de tipo de parametro nulo.
         StringBuilder sql = new StringBuilder("""
                 SELECT type, transaction_id, order_reference, expected_amount,

@@ -160,7 +160,7 @@ class ReconciliationEngineTest {
         SettlementRecord repassePix = new SettlementRecord("TX-2", DIA,
                 Money.of("500.00"), Money.of("50.00"), Money.of("450.00"));
 
-        // Sem taxa de PIX na tabela, o motor nao tem base para comparar -- e nao inventa uma.
+        // Sem taxa de PIX na tabela, o motor nao tem base para comparar, e nao inventa uma.
         assertThat(engine.compare(vendaPix, List.of(repassePix))).isEmpty();
     }
 

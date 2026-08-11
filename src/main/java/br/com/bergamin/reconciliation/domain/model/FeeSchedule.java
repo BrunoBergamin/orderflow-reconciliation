@@ -9,7 +9,7 @@ import java.util.Map;
  *
  * <p>E a referencia contra a qual a taxa efetivamente cobrada e comparada. Sem ela, o
  * sistema so consegue dizer "o valor bateu"; com ela, consegue dizer "o valor bateu, mas
- * voce esta pagando 0,4 ponto a mais do que contratou" -- que costuma ser a divergencia
+ * voce esta pagando 0,4 ponto a mais do que contratou", que costuma ser a divergencia
  * mais cara e a que ninguem percebe, porque cada linha isolada parece certa.</p>
  */
 public record FeeSchedule(Map<PaymentMethod, BigDecimal> ratesByMethod) {

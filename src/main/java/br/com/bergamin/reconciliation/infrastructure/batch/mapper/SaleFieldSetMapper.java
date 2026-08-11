@@ -13,7 +13,7 @@ import java.time.LocalDate;
  * Converte uma linha do arquivo de vendas no registro de dominio.
  *
  * <p>Qualquer erro aqui (data invalida, valor com virgula, meio de pagamento desconhecido)
- * sobe como excecao e o Spring Batch a embrulha em {@code FlatFileParseException} -- que o
+ * sobe como excecao e o Spring Batch a embrulha em {@code FlatFileParseException}, que o
  * passo esta configurado para pular, registrando a linha em {@code import_error}. A
  * validacao do dominio, portanto, e o que separa linha boa de linha ruim.</p>
  */

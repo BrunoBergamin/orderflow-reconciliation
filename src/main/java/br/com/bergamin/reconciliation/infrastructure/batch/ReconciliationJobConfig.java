@@ -250,7 +250,7 @@ public class ReconciliationJobConfig {
      *
      * <p>Busca os repasses da transacao por indice ({@code run_id, transaction_id}), o que
      * mantem o custo constante por linha. Devolver {@code null} quando nao ha divergencia
-     * faz o Batch filtrar o item -- o {@code filterCount} do passo vira, de graca, a
+     * faz o Batch filtrar o item. O {@code filterCount} do passo vira, de graca, a
      * contagem de vendas que fecharam certo.</p>
      */
     @Bean

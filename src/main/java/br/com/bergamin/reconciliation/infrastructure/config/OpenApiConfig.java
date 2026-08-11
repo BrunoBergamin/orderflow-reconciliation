@@ -19,7 +19,7 @@ public class OpenApiConfig {
                         .description("""
                                 Conciliacao financeira em lote. Recebe o relatorio de vendas da loja e o
                                 arquivo de repasse do adquirente, cruza transacao a transacao e aponta o
-                                que nao fecha -- inclusive taxa cobrada acima da contratada.
+                                que nao fecha, inclusive taxa cobrada acima da contratada.
 
                                 Processamento com Spring Batch: tolera linha ruim sem derrubar o arquivo
                                 e o job reinicia do passo onde parou.
