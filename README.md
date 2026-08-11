@@ -8,15 +8,14 @@
 Trabalho com operação de e-commerce e já tive que conferir repasse de maquininha na mão,
 comparando planilha de vendas com o arquivo do adquirente.
 
-É um trabalho chato, demorado, e que ninguém faz até o fim. É justamente aí que o dinheiro
-escapa.
+É um trabalho chato, demorado, e que ninguém faz até o fim. É aí que o dinheiro escapa.
 
 Este serviço faz isso sozinho: recebe o relatório de vendas da loja e o arquivo de repasse
 do adquirente, cruza transação por transação e aponta o que não fecha.
 
 ## O que ele encontra
 
-O óbvio primeiro: **venda que não teve repasse** (o dinheiro simplesmente não entrou),
+O óbvio primeiro: **venda que não teve repasse** (o dinheiro não entrou),
 **repasse sem venda** e **valor divergente** entre o que a loja registrou e o que o
 adquirente pagou.
 
@@ -104,7 +103,7 @@ E só conta execução **concluída**. Uma tentativa que falhou antes não imped
 
 **Tolerância de um centavo.** O arquivo do adquirente já vem arredondado. Sem tolerância, um
 relatório de 10 mil linhas viria com milhares de alertas de centavo e ninguém olharia mais
-para ele, que é como um sistema de conciliação morre na prática. Mesma ideia na taxa: folga
+para ele. É assim que um sistema de conciliação morre. Mesma ideia na taxa: folga
 de 0,05 ponto percentual antes de acusar.
 
 **O POST devolve 202, não 200.** Quando a resposta sai, o processamento ainda não terminou.
