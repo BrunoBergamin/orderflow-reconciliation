@@ -173,6 +173,12 @@ Este é o terceiro de um sistema que montei para estudar arquitetura de back-end
 - [orderflow-fulfillment](https://github.com/BrunoBergamin/orderflow-fulfillment), consumidor
   dos eventos, com DLQ, circuit breaker e cache
 
+Para ver os três funcionando juntos sem clonar nada além de um repositório:
+[orderflow-platform](https://github.com/BrunoBergamin/orderflow-platform), um
+`docker compose up -d` e um roteiro guiado que acompanha o pedido nascendo, atravessando a
+fila e reaparecendo na conciliação, com as divergências deste serviço saindo de vendas
+geradas pelos outros dois.
+
 ---
 
 **Bruno Alves Bergamin**, back-end Java ·
